@@ -9,6 +9,41 @@ import { WebsocketClientConfig } from '@/napcat-onebot/config/config';
 import { IOB11NetworkAdapter } from '@/napcat-onebot/network/adapter';
 import json5 from 'json5';
 
+function normalizeIdList (ids: string[] | undefined): string[] {
+  if (!Array.isArray(ids)) {
+    return [];
+  }
+  return ids
+    .map(id => String(id).trim())
+    .filter(Boolean);
+}
+
+export function shouldForwardEvent (
+  config: Pick<WebsocketClientConfig, 'eventFilter'>,
+  event: OB11EmitEventContent
+): boolean {
+  if ((event as any)?.message_type !== 'group') {
+    return true;
+  }
+
+  const groupId = String((event as any)?.group_id ?? '').trim();
+  if (!groupId) {
+    return true;
+  }
+
+  const groupBlacklist = normalizeIdList(config.eventFilter?.groupBlacklist);
+  if (groupBlacklist.includes(groupId)) {
+    return false;
+  }
+
+  const groupWhitelist = normalizeIdList(config.eventFilter?.groupWhitelist);
+  if (groupWhitelist.length === 0) {
+    return true;
+  }
+
+  return groupWhitelist.includes(groupId);
+}
+
 export class OB11WebSocketClientAdapter extends IOB11NetworkAdapter<WebsocketClientConfig> {
   private connection: WebSocket | null = null;
   private heartbeatRef: NodeJS.Timeout | null = null;
@@ -19,6 +54,14 @@ export class OB11WebSocketClientAdapter extends IOB11NetworkAdapter<WebsocketCli
 
   async onEvent<T extends OB11EmitEventContent> (event: T) {
     if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+      if (!shouldForwardEvent(this.config, event)) {
+        if (this.config.debug) {
+          this.logger.logDebug(
+            `[OneBot] [WebSocket Client] Event dropped by group filter: ${String((event as any)?.group_id ?? 'unknown')}`
+          );
+        }
+        return;
+      }
       this.connection.send(JSON.stringify(event));
     }
   }

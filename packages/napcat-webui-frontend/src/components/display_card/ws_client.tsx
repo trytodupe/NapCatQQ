@@ -22,13 +22,35 @@ const WebsocketClientDisplayCard: React.FC<WebsocketClientDisplayCardProps> = (
     reconnectInterval,
     messagePostFormat,
     reportSelfMessage,
+    eventFilter,
   } = data;
 
+  const whitelistCount = eventFilter?.groupWhitelist?.length || 0;
+  const blacklistCount = eventFilter?.groupBlacklist?.length || 0;
+
   const fields: NetworkDisplayCardFields<'websocketClients'> = [
-    { label: 'URL', value: url },
+    { label: 'Remote URL', value: url },
+    {
+      label: '群白名单',
+      value: whitelistCount,
+      render: (value) => (
+        <Chip color={Number(value) > 0 ? 'success' : 'default'} size='sm' variant='flat'>
+          {Number(value) > 0 ? `${String(value)} groups` : 'Disabled'}
+        </Chip>
+      ),
+    },
+    {
+      label: '群黑名单',
+      value: blacklistCount,
+      render: (value) => (
+        <Chip color={Number(value) > 0 ? 'warning' : 'default'} size='sm' variant='flat'>
+          {Number(value) > 0 ? `${String(value)} groups` : 'Empty'}
+        </Chip>
+      ),
+    },
+    { label: '消息格式', value: messagePostFormat },
     { label: '重连间隔', value: `${reconnectInterval}ms` },
     { label: '心跳间隔', value: `${heartInterval}ms` },
-    { label: '消息格式', value: messagePostFormat },
     {
       label: '上报自身消息',
       value: reportSelfMessage,

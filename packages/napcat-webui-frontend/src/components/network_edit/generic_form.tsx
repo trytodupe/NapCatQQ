@@ -66,8 +66,9 @@ const GenericForm = <T extends keyof NetworkConfigType> ({
   useEffect(() => {
     if (data) {
       const keys = Object.keys(data) as Path<NetworkConfig[T][0]>[];
+      const dataRecord = data as unknown as Record<string, unknown>;
       for (const key of keys) {
-        const value = data[key] as PathValue<
+        const value = dataRecord[key] as PathValue<
           NetworkConfig[T][0],
           Path<NetworkConfig[T][0]>
         >;
@@ -125,7 +126,7 @@ const GenericForm = <T extends keyof NetworkConfigType> ({
                           label={field.label}
                           placeholder={field.placeholder}
                           selectedKeys={[controllerField.value as string]}
-                          value={controllerField.value.toString()}
+                          value={String(controllerField.value ?? '')}
                           classNames={{
                             trigger: 'bg-default-100/50 dark:bg-white/5 backdrop-blur-md border border-transparent hover:bg-default-200/50 dark:hover:bg-white/10 transition-all shadow-sm data-[hover=true]:border-default-300',
                             value: 'text-default-700',

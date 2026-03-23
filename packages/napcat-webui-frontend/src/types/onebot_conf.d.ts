@@ -5,9 +5,7 @@ interface AdapterConfigInner {
   token: string;
 }
 
-interface AdapterConfig extends AdapterConfigInner {
-  [key: string]: string | boolean | number;
-}
+interface AdapterConfig extends AdapterConfigInner {}
 
 type MessageFormat = 'array' | 'string';
 
@@ -42,6 +40,10 @@ interface WebsocketClientConfig extends AdapterConfig {
   token: string;
   debug: boolean;
   heartInterval: number;
+  eventFilter?: {
+    groupWhitelist: string[];
+    groupBlacklist: string[];
+  };
 }
 
 interface HttpSseServerConfig extends HttpServerConfig {

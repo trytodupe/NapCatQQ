@@ -1,93 +1,230 @@
-<img src="https://napneko.github.io/assets/newnewlogo.png" width = "305" height = "411" alt="NapCat" align=right />
-<div align="center">
+# NapCatQQ WS Filter Fork
 
-# NapCat
+这是一个基于 `NapNeko/NapCatQQ` 的定制 fork。
 
-_Modern protocol-side framework implemented based on NTQQ._
+这个 fork 的目标很单一：
 
-> 云起兮风生，心向远方兮路未曾至.
+> 为 **OneBot WebSocket Client** 增加按群过滤消息上报的能力。
 
-</div>
+适用场景：
+
+- 你使用 NapCat 作为 **反向 WebSocket Client** 连接远程 OneBot Server
+- 远端提供的是公共 bot 服务，多个用户各自接入自己的 bot 账号
+- 当同一个群里有多个 bot 同时接入该公共服务时，容易出现重复响应
+- 你希望在 **不本地部署完整 bot 框架** 的前提下，只把指定群的消息上报到远端
 
 ---
 
-## New Feature
+## Fork 增加了什么
 
-在 v4.8.115+ 版本开始
+这个 fork 为：
 
-1. NapCatQQ 支持 [Stream Api](https://napneko.github.io/develop/file)
-2. NapCatQQ 推荐 message_id/user_id/group_id 均使用字符串类型
+```text
+network.websocketClients[*]
+```
 
-- [1] 解决 Docker/跨设备/大文件 的多媒体上下传问题
-- [2] 采用字符串可以解决扩展到int64的问题，同时也可以解决部分语言（如JavaScript）对大整数支持不佳的问题，增加极少成本。
+新增配置字段：
 
-## Welcome
+```json
+{
+  "eventFilter": {
+    "groupWhitelist": ["123456789", "987654321"],
+    "groupBlacklist": ["111111111"]
+  }
+}
+```
 
-- NapCatQQ is a modern implementation of the Bot protocol based on NTQQ.
-  - NapCatQQ 是现代化的基于 NTQQ 的 Bot 协议端实现
+### 过滤规则
 
-## Feature
+当前行为如下：
 
-- **Easy to Use**
-  - 作为初学者能够轻松使用.
-- **Quick and Efficient**
-  - 在低内存操作系统长时运行.
-- **Rich API Interface**
-  - 完整实现了大部分标准接口.
-- **Stable and Reliable**
-  - 持续稳定的开发与维护.
+1. 非群消息默认放行
+2. `groupBlacklist` 优先级最高
+3. 如果 `groupWhitelist` 非空，则只允许白名单群上报
+4. 如果 `groupWhitelist` 为空，则除黑名单外全部放行
 
-## Quick Start
+换句话说，这个 fork 影响的是：
 
-可前往 [Release](https://github.com/NapNeko/NapCatQQ/releases/) 页面下载最新版本
+> **NapCat 向远端 WebSocket Client 上报事件时的过滤行为**
 
-**首次使用**请务必查看如下文档看使用教程
+它不会修改：
 
-> 项目非盈利，涉及 对接问题/基础问题/下层框架问题 请自行搜索解决，本项目社区不提供此类解答。
+- HTTP Client / HTTP Server / WebSocket Server 行为
+- Plugin 系统行为
+- NapCat 本地消息产生逻辑
 
-## Link
+---
 
-| Docs | [![Github.IO](https://img.shields.io/badge/docs%20on-Github.IO-orange)](https://napneko.github.io/) | [![Cloudflare.Worker](https://img.shields.io/badge/docs%20on-Cloudflare.Worker-black)](https://doc.napneko.icu/) | [![Cloudflare.HKServer](https://img.shields.io/badge/docs%20on-Cloudflare.HKServer-informational)](https://napcat.napneko.icu/) |
-|:-:|:-:|:-:|:-:|
+## WebUI 支持
 
-| Docs | [![Cloudflare.Pages](https://img.shields.io/badge/docs%20on-Cloudflare.Pages-blue)](https://napneko.pages.dev/) | [![Server.Other](https://img.shields.io/badge/docs%20on-Server.Other-green)](https://napcat.top/) | [![NapCat.Top](https://img.shields.io/badge/docs%20on-NapCat.Top-red)](https://napcat.top/) |
-|:-:|:-:|:-:|:-:|
+这个 fork 同时修改了 WebUI 前后端。
 
-| QQ Group | [![NapCat Family Group 4](https://img.shields.io/badge/NapCat%20Family%20Group%204-Join-blue)](https://qm.qq.com/q/E4nfkGD6oK) | [![NapCat Family Group 3](https://img.shields.io/badge/NapCat%20Family%20Group%203-Join-blue)](https://qm.qq.com/q/XyiyGPqa42) | [![NapCat Family Group 2](https://img.shields.io/badge/NapCat%20Family%20Group%202-Join-blue)](https://qm.qq.com/q/gq18RH7o7S) | [![NapCat Family Group 1](https://img.shields.io/badge/NapCat%20Family%20Group%201-Join-blue)](https://qm.qq.com/q/VwpnklcXqo) |
-|:-:|:-:|:-:|:-:|:-:|
+在 WebUI 中可以直接编辑：
 
-| Telegram | [![Telegram](https://img.shields.io/badge/Telegram-napcatqq-blue)](https://t.me/napcatqq) |
-|:-:|:-:|
+```text
+Network -> Websocket Client -> Edit
+```
 
-| DeepWiki | [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/NapNeko/NapCatQQ) |
-|:-:|:-:|
+你会看到两个新字段：
 
-> QQ群因为特殊原因需要入群密钥，请在webui关于页面获取，仅最新的100个版本以内有效。
+- `Group whitelist`
+- `Group blacklist`
 
-下面的QQ Group 无需密钥，随时清理不活跃人员和Bot，仅500人容量。
+支持格式：
 
-[困困猫猫的高中](https://qm.qq.com/q/14aUVclRUA)
+- 一行一个群号
+- 逗号分隔也可
 
-## Thanks
+保存后会写入：
 
-- [Lagrange](https://github.com/LagrangeDev/Lagrange.Core) 对本项目的大力支持 参考部分代码 已获授权
+```text
+onebot11_<uin>.json
+```
 
-- [AstrBot](https://github.com/AstrBotDevs/AstrBot) 是完美适配本项目的LLM Bot框架 在此推荐一下
+---
 
-- [MaiBot](https://github.com/MaiM-with-u/MaiBot) 一只赛博群友 麦麦 Bot框架 在此推荐一下
+## 配置示例
 
-- [qq-chat-exporter](https://github.com/shuakami/qq-chat-exporter/) 基于NapCat的消息导出工具 在此推荐一下
+示例：
 
-- 不过最最重要的 还是需要感谢屏幕前的你哦~
+```json
+{
+  "network": {
+    "websocketClients": [
+      {
+        "name": "remote-ob",
+        "enable": true,
+        "url": "wss://example.com/",
+        "reportSelfMessage": false,
+        "messagePostFormat": "array",
+        "token": "your-token",
+        "debug": false,
+        "heartInterval": 30000,
+        "reconnectInterval": 30000,
+        "eventFilter": {
+          "groupWhitelist": ["123456789", "987654321"],
+          "groupBlacklist": ["111111111"]
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Docker 镜像
+
+当前已发布的架构专用镜像：
+
+### amd64
+
+```text
+trytodupe/napcat-docker:v4.17.53-ws-filter-amd64
+```
+
+### arm64
+
+```text
+trytodupe/napcat-docker:v4.17.53-ws-filter-arm64
+```
+
+---
+
+## Docker Compose 示例
+
+### amd64
+
+```yaml
+services:
+  napcat:
+    image: trytodupe/napcat-docker:v4.17.53-ws-filter-amd64
+    container_name: napcat
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3000:3000
+      - 3001:3001
+      - 6099:6099
+    volumes:
+      - ./config:/app/napcat/config
+      - ./QQ:/app/.config/QQ
+```
+
+### arm64
+
+```yaml
+services:
+  napcat:
+    image: trytodupe/napcat-docker:v4.17.53-ws-filter-arm64
+    container_name: napcat
+    restart: always
+    network_mode: bridge
+    ports:
+      - 3000:3000
+      - 3001:3001
+      - 6099:6099
+    volumes:
+      - ./config:/app/napcat/config
+      - ./QQ:/app/.config/QQ
+```
+
+---
+
+## 这个 fork 适合谁
+
+适合：
+
+- 远端 OneBot Server 很重，不想本地部署
+- 只想让某些群消息被远端 bot 收到
+- 希望控制点放在 NapCat 侧，而不是上游 bot 框架里
+
+不适合：
+
+- 需要复杂路由、中间件编排、多下游分发
+- 需要按用户 / notice / request / meta_event 做更细粒度策略
+- 需要长期维护大量自定义协议改动
+
+---
+
+## 与上游的关系
+
+这个仓库不是官方发行版，而是基于上游做的定制补丁。
+
+上游项目：
+
+```text
+NapNeko/NapCatQQ
+```
+
+Docker 侧相关工作基于：
+
+```text
+mlikiowa/NapCat-Docker
+```
+
+如果你需要官方完整文档、社区支持、标准能力，请优先参考上游仓库。
+
+---
+
+## 当前定制范围
+
+目前这个 fork 只额外包含：
+
+- WebSocket Client group whitelist / blacklist
+- WebUI 对应配置入口
+- WebUI backend 对应配置持久化
+
+没有主动引入其他行为变化。
 
 ---
 
 ## License
 
-本项目采用 混合协议 开源，因此使用本项目时，你需要注意以下几点：
+本 fork 继续遵循上游仓库的许可证与相关约束。
 
-1. 第三方库代码或修改部分遵循其原始开源许可.
-2. 本项目获取部分项目授权而不受部分约束
-2. 项目其余逻辑代码采用[本仓库开源许可](./LICENSE).
+使用前请自行确认：
 
-**本仓库仅用于提高易用性，实现消息推送类功能，此外，禁止任何项目未经仓库主作者授权基于 NapCat 代码开发。使用请遵守当地法律法规，由此造成的问题由使用者和提供违规使用教程者负责。**
+- 上游许可证要求
+- Docker 镜像分发方式
+- 你所在地区与实际用途的合规性
