@@ -60,6 +60,10 @@ const WebsocketClientConfigSchema = Type.Object({
   debug: Type.Boolean({ default: false }),
   heartInterval: Type.Number({ default: 30000 }),
   verifyCertificate: Type.Optional(Type.Boolean({ default: true })),
+  eventFilter: Type.Optional(Type.Object({
+    groupWhitelist: Type.Array(Type.String(), { default: [] }),
+    groupBlacklist: Type.Array(Type.String(), { default: [] }),
+  })),
 });
 
 const PluginConfigSchema = Type.Object({

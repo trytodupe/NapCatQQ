@@ -41,6 +41,17 @@ const ShellBaseConfig = (source_map: boolean = false) =>
     resolve: {
       conditions: ['node', 'default'],
       alias: {
+        'napcat-adapter': resolve(__dirname, '../napcat-adapter'),
+        'napcat-common': resolve(__dirname, '../napcat-common'),
+        'napcat-core': resolve(__dirname, '../napcat-core'),
+        'napcat-database': resolve(__dirname, '../napcat-database'),
+        'napcat-dpapi': resolve(__dirname, '../napcat-dpapi'),
+        'napcat-image-size': resolve(__dirname, '../napcat-image-size'),
+        'napcat-onebot': resolve(__dirname, '../napcat-onebot'),
+        'napcat-protobuf': resolve(__dirname, '../napcat-protobuf'),
+        'napcat-protocol': resolve(__dirname, '../napcat-protocol'),
+        'napcat-qrcode': resolve(__dirname, '../napcat-qrcode'),
+        'napcat-webui-backend': resolve(__dirname, '../napcat-webui-backend'),
         '@/napcat-core': resolve(__dirname, '../napcat-core'),
         '@/napcat-common': resolve(__dirname, '../napcat-common'),
         '@/napcat-onebot': resolve(__dirname, '../napcat-onebot'),

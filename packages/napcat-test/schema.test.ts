@@ -7,6 +7,7 @@ import { OB11MessageDataSchema, OB11MessageSchema, OB11PostSendMsgSchema } from 
 import { OB11MessageSchema as OB11ActionMessageSchema } from '../napcat-onebot/action/schemas';
 import { OneBotConfigSchema, loadConfig as loadOneBotConfig, OneBotConfig } from '../napcat-onebot/config';
 import { NapcatConfigSchema } from '../napcat-core/helper/config';
+import { shouldForwardEvent } from '../napcat-onebot/network/websocket-client';
 
 describe('NapCat Schemas Compilation', () => {
   test('should compile OB11MessageDataSchema without duplicate id error', () => {
@@ -114,12 +115,17 @@ describe('NapCat Configuration Loaders', () => {
           token: '',
           debug: false,
           heartInterval: 30000,
+          eventFilter: {
+            groupWhitelist: ['10001'],
+          } as any,
         }],
         plugins: [],
       },
     };
     const loaded = loadOneBotConfig(partialConfig);
     expect(loaded.network.websocketClients[0]?.verifyCertificate).toBe(true);
+    expect(loaded.network.websocketClients[0]?.eventFilter.groupWhitelist).toEqual(['10001']);
+    expect(loaded.network.websocketClients[0]?.eventFilter.groupBlacklist).toEqual([]);
   });
 
   test('OneBotConfig websocketClients should preserve explicit verifyCertificate false', () => {
@@ -140,12 +146,17 @@ describe('NapCat Configuration Loaders', () => {
           debug: false,
           heartInterval: 30000,
           verifyCertificate: false,
+          eventFilter: {
+            groupWhitelist: ['10001'],
+          } as any,
         }],
         plugins: [],
       },
     };
     const loaded = loadOneBotConfig(partialConfig);
     expect(loaded.network.websocketClients[0]?.verifyCertificate).toBe(false);
+    expect(loaded.network.websocketClients[0]?.eventFilter.groupWhitelist).toEqual(['10001']);
+    expect(loaded.network.websocketClients[0]?.eventFilter.groupBlacklist).toEqual([]);
   });
 
   test('NapcatConfig should compile and apply defaults', () => {
@@ -161,5 +172,42 @@ describe('NapCat Configuration Loaders', () => {
     const resolved = data as Record<string, unknown>;
     expect(resolved['consoleLog']).toBe(true);
     expect(resolved['consoleLogLevel']).toBe('info');
+  });
+});
+
+describe('WebSocket client group filter', () => {
+  const config = {
+    eventFilter: {
+      groupWhitelist: ['10001', '10002'],
+      groupBlacklist: ['10002', '10003'],
+    },
+  };
+
+  test('should allow non-group events', () => {
+    expect(shouldForwardEvent(config as any, { post_type: 'meta_event' } as any)).toBe(true);
+  });
+
+  test('should allow whitelisted group messages', () => {
+    expect(shouldForwardEvent(config as any, {
+      post_type: 'message',
+      message_type: 'group',
+      group_id: 10001,
+    } as any)).toBe(true);
+  });
+
+  test('should block blacklisted group messages even if they are also whitelisted', () => {
+    expect(shouldForwardEvent(config as any, {
+      post_type: 'message',
+      message_type: 'group',
+      group_id: 10002,
+    } as any)).toBe(false);
+  });
+
+  test('should block group messages outside the whitelist when the whitelist is not empty', () => {
+    expect(shouldForwardEvent(config as any, {
+      post_type: 'message',
+      message_type: 'group',
+      group_id: 99999,
+    } as any)).toBe(false);
   });
 });
