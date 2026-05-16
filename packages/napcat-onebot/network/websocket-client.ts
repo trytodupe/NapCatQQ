@@ -7,42 +7,8 @@ import { OB11Response } from '@/napcat-onebot/action/OneBotAction';
 import { LifeCycleSubType, OB11LifeCycleEvent } from '@/napcat-onebot/event/meta/OB11LifeCycleEvent';
 import { WebsocketClientConfig } from '@/napcat-onebot/config/config';
 import { IOB11NetworkAdapter } from '@/napcat-onebot/network/adapter';
+import { shouldForwardEvent } from '@/napcat-onebot/network/ws-event-filter';
 import json5 from 'json5';
-
-function normalizeIdList (ids: string[] | undefined): string[] {
-  if (!Array.isArray(ids)) {
-    return [];
-  }
-  return ids
-    .map(id => String(id).trim())
-    .filter(Boolean);
-}
-
-export function shouldForwardEvent (
-  config: Pick<WebsocketClientConfig, 'eventFilter'>,
-  event: OB11EmitEventContent
-): boolean {
-  if ((event as any)?.message_type !== 'group') {
-    return true;
-  }
-
-  const groupId = String((event as any)?.group_id ?? '').trim();
-  if (!groupId) {
-    return true;
-  }
-
-  const groupBlacklist = normalizeIdList(config.eventFilter?.groupBlacklist);
-  if (groupBlacklist.includes(groupId)) {
-    return false;
-  }
-
-  const groupWhitelist = normalizeIdList(config.eventFilter?.groupWhitelist);
-  if (groupWhitelist.length === 0) {
-    return true;
-  }
-
-  return groupWhitelist.includes(groupId);
-}
 
 export class OB11WebSocketClientAdapter extends IOB11NetworkAdapter<WebsocketClientConfig> {
   private connection: WebSocket | null = null;

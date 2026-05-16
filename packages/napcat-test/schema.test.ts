@@ -7,7 +7,7 @@ import { OB11MessageDataSchema, OB11MessageSchema, OB11PostSendMsgSchema } from 
 import { OB11MessageSchema as OB11ActionMessageSchema } from '../napcat-onebot/action/schemas';
 import { OneBotConfigSchema, loadConfig as loadOneBotConfig, OneBotConfig } from '../napcat-onebot/config';
 import { NapcatConfigSchema } from '../napcat-core/helper/config';
-import { shouldForwardEvent } from '../napcat-onebot/network/websocket-client';
+import { shouldForwardEvent } from '../napcat-onebot/network/ws-event-filter';
 
 describe('NapCat Schemas Compilation', () => {
   test('should compile OB11MessageDataSchema without duplicate id error', () => {
