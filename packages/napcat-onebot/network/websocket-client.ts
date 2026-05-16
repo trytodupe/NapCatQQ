@@ -7,6 +7,7 @@ import { OB11Response } from '@/napcat-onebot/action/OneBotAction';
 import { LifeCycleSubType, OB11LifeCycleEvent } from '@/napcat-onebot/event/meta/OB11LifeCycleEvent';
 import { WebsocketClientConfig } from '@/napcat-onebot/config/config';
 import { IOB11NetworkAdapter } from '@/napcat-onebot/network/adapter';
+import { shouldForwardEvent } from '@/napcat-onebot/network/ws-event-filter';
 import json5 from 'json5';
 
 export class OB11WebSocketClientAdapter extends IOB11NetworkAdapter<WebsocketClientConfig> {
@@ -19,6 +20,9 @@ export class OB11WebSocketClientAdapter extends IOB11NetworkAdapter<WebsocketCli
 
   async onEvent<T extends OB11EmitEventContent> (event: T) {
     if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+      if (!shouldForwardEvent(this.config, event)) {
+        return;
+      }
       this.connection.send(JSON.stringify(event));
     }
   }
