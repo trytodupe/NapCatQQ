@@ -141,6 +141,12 @@ export interface NodeQQNTWrapperUtil {
 }
 
 export interface NodeIQQNTWrapperSession {
+    getNTWrapperSession(str: string): NodeIQQNTWrapperSession;
+
+    get(): NodeIQQNTWrapperSession;
+
+    new(): NodeIQQNTWrapperSession;
+
     create(): NodeIQQNTWrapperSession;
 
     init(
@@ -245,6 +251,18 @@ export interface NodeIQQNTWrapperSession {
     getConfigMgrService(): unknown;
 }
 
+export interface NodeIQQNTStartupSessionWrapper {
+    create(): NodeIQQNTStartupSessionWrapper;
+
+    stop(): void;
+
+    start(): void;
+
+    createWithModuleList(uk: unknown): unknown;
+
+    getSessionIdList(): Promise<Map<unknown, unknown>>;
+}
+
 export interface EnginInitDesktopConfig {
     base_path_prefix: string;
     platform_type: PlatformType;
@@ -269,6 +287,7 @@ export interface WrapperNodeApi {
     NodeIO3MiscService: NodeIO3MiscService;
     NodeQQNTWrapperUtil: NodeQQNTWrapperUtil;
     NodeIQQNTWrapperSession: NodeIQQNTWrapperSession;
+    NodeIQQNTStartupSessionWrapper: NodeIQQNTStartupSessionWrapper;
     NodeIQQNTWrapperEngine: NodeIQQNTWrapperEngine;
     NodeIKernelLoginService: NodeIKernelLoginService;
 

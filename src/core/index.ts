@@ -9,6 +9,7 @@ import {
 } from '@/core/apis';
 import { NTQQCollectionApi } from '@/core/apis/collection';
 import {
+    NodeIQQNTStartupSessionWrapper,
     NodeIQQNTWrapperSession,
     NodeQQNTWrapperUtil,
     PlatformType,

@@ -10,6 +10,7 @@ import {
     loadQQWrapper,
     NapCatCore,
     NapCatCoreWorkingEnv,
+    NodeIQQNTStartupSessionWrapper,
     NodeIQQNTWrapperSession,
     PlatformType,
     WrapperNodeApi,
@@ -277,7 +278,20 @@ export async function NCoreInitShell() {
 
     const engine = wrapper.NodeIQQNTWrapperEngine.get();
     const loginService = wrapper.NodeIKernelLoginService.get();
-    const session = wrapper.NodeIQQNTWrapperSession.create();
+    let session: NodeIQQNTWrapperSession;
+    let startupSession: NodeIQQNTStartupSessionWrapper | null = null;
+    try {
+        startupSession = wrapper.NodeIQQNTStartupSessionWrapper.create();
+        session = wrapper.NodeIQQNTWrapperSession.getNTWrapperSession('nt_1');
+    } catch (e: unknown) {
+        try {
+            session = wrapper.NodeIQQNTWrapperSession.create();
+        } catch (error: unknown) {
+            logger.logError('创建 StartupSession 失败', e);
+            logger.logError('创建 Session 失败', error);
+            throw error;
+        }
+    }
 
     const [dataPath, dataPathGlobal] = getDataPaths(wrapper);
     const systemPlatform = getPlatformType();
@@ -297,6 +311,7 @@ export async function NCoreInitShell() {
     const selfInfo = await handleLogin(loginService, logger, pathWrapper, quickLoginUin, historyLoginList);
     const amgomDataPiece = 'eb1fd6ac257461580dc7438eb099f23aae04ca679f4d88f53072dc56e3bb1129';
     o3Service.setAmgomDataPiece(basicInfoWrapper.QQVersionAppid, new Uint8Array(Buffer.from(amgomDataPiece, 'hex')));
+    startupSession?.stop();
 
     let guid = loginService.getMachineGuid();
     guid = guid.slice(0, 8) + '-' + guid.slice(8, 12) + '-' + guid.slice(12, 16) + '-' + guid.slice(16, 20) + '-' + guid.slice(20);
@@ -360,4 +375,3 @@ export class NapCatShell {
             .catch(e => this.context.logger.logError('初始化OneBot失败', e));
     }
 }
-
