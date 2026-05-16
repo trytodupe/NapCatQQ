@@ -3,7 +3,7 @@ name: Trigger Docker WS Filter
 on:
   push:
     tags:
-      - '*-ws-filter'
+      - '*ws-filter*'
   workflow_dispatch:
     inputs:
       tag:
