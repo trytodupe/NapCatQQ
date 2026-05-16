@@ -1,0 +1,41 @@
+name: Trigger Docker WS Filter
+
+on:
+  push:
+    tags:
+      - '*-ws-filter'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag name to dispatch to NapCat-Docker
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger NapCat-Docker publish workflow
+        env:
+          GH_TOKEN: ${{ secrets.NAPCAT_BUILD }}
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          set -euo pipefail
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            https://api.github.com/repos/trytodupe/NapCat-Docker/dispatches \
+            -d "{\"event_type\":\"napcat-ws-filter-tag\",\"client_payload\":{\"napcat_ref\":\"${TAG}\",\"image_tag\":\"${TAG}\"}}"
