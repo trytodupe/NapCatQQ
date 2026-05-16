@@ -9,6 +9,7 @@ import { LifeCycleSubType, OB11LifeCycleEvent } from '@/onebot/event/meta/OB11Li
 import { WebsocketClientConfig } from '@/onebot/config/config';
 import { NapCatOneBot11Adapter } from "@/onebot";
 import { IOB11NetworkAdapter } from "@/onebot/network/adapter";
+import { shouldForwardEvent } from '@/onebot/network/ws-event-filter';
 
 export class OB11ActiveWebSocketAdapter extends IOB11NetworkAdapter<WebsocketClientConfig> {
     private connection: WebSocket | null = null;
@@ -20,6 +21,9 @@ export class OB11ActiveWebSocketAdapter extends IOB11NetworkAdapter<WebsocketCli
 
     onEvent<T extends OB11EmitEventContent>(event: T) {
         if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+            if (!shouldForwardEvent(this.config, event)) {
+                return;
+            }
             this.connection.send(JSON.stringify(event));
         }
     }

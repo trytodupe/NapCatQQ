@@ -101,6 +101,10 @@ export const websocketClientDefaultConfigs = createDefaultAdapterConfig({
     token: '',
     debug: false,
     heartInterval: 30000,
+    eventFilter: {
+        groupWhitelist: [] as string[],
+        groupBlacklist: [] as string[],
+    },
 });
 export type WebsocketClientConfig = typeof websocketClientDefaultConfigs;
 
